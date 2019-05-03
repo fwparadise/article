@@ -105,10 +105,10 @@
             _self.accounts.push(_self.userAccount);
             _self.userAccount = ""
           } else {
-            _self.$message({type: "info", text: "用户不存在"})
+            _self.$message({type: "info", message: "用户不存在"})
           }
         }).catch(function () {
-          _self.$message({type: "warning", text: "网络出错"})
+          _self.$message({type: "warning", message: "网络出错"})
         });
       },
       send() {

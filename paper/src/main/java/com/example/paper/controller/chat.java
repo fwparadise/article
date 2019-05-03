@@ -6,8 +6,6 @@ package com.example.paper.controller;
 import com.example.paper.entity.Message;
 import com.example.paper.service.ManageMessage;
 import org.json.JSONObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import javax.websocket.*;

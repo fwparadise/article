@@ -1,8 +1,6 @@
 package com.example.paper.filter;
 
 import com.example.paper.utils.JwtUtil;
-import org.springframework.util.AntPathMatcher;
-import org.springframework.util.PathMatcher;
 
 import javax.servlet.*;
 import javax.servlet.http.HttpServletRequest;
@@ -11,8 +9,8 @@ import java.io.IOException;
 
 
 public class JwtAuthenticationFilter implements Filter {
-    private static final PathMatcher pathMatcher = new AntPathMatcher();
-
+    private static final String[] pathChecked=new String[]{"websocket","sign","druid","favicon","swagger","api-doc"};
+    private static final String[] pathExclude=new String[]{"/","/csrf"};
     public void destroy() {
     }
 
@@ -36,7 +34,17 @@ public class JwtAuthenticationFilter implements Filter {
 
     //我们只对地址 /api 开头的api检查jwt. 不然的话登录/login也需要jwt
     private boolean isProtectedUrl(HttpServletRequest request) {
-        return !pathMatcher.match("/sign/**", request.getServletPath())&&!pathMatcher.match("/websocket/**",request.getServletPath())&&!request.getServletPath().contains("swagger-ui");
+        for(String path:pathChecked){
+            if (request.getServletPath().contains(path)){
+                return false;
+            }
+        }
+        for (String path:pathExclude){
+            if (request.getServletPath().equals(path)){
+                return false;
+            }
+        }
+        return true;
     }
 
     public void init(FilterConfig config) throws ServletException {
