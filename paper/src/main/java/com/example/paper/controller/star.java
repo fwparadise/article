@@ -23,7 +23,7 @@ public class star {
     }
 
     @RequestMapping(value = "/exist", method = RequestMethod.GET)
-    public ResultVO exist(@RequestParam("articleId") String articleId, HttpServletRequest request) {
+    public ResultVO exist(@RequestParam("articleId") Long articleId, HttpServletRequest request) {
         ResultVO resultVO = new ResultVO();
         String account = JwtUtil.validateToken(request.getHeader("Authorization")).get("account").toString();
         resultVO.setState(1);
@@ -33,7 +33,7 @@ public class star {
     }
 
     @RequestMapping(value = "/getstar", method = RequestMethod.GET)
-    public ResultVO getStar(@RequestParam("articleId") String articleId) {
+    public ResultVO getStar(@RequestParam("articleId") Long articleId) {
         ResultVO resultVO = new ResultVO();
         resultVO.setState(1);
         resultVO.setMsg("成功");
@@ -41,8 +41,8 @@ public class star {
         return resultVO;
     }
 
-    @RequestMapping(value = "/add", method = RequestMethod.PUT)
-    public ResultVO add(@RequestParam("articleId") String articleId, @RequestParam("score") int score, HttpServletRequest request) {
+    @RequestMapping(value = "/add", method = RequestMethod.POST)
+    public ResultVO add(@RequestParam("articleId") Long articleId, @RequestParam("score") int score, HttpServletRequest request) {
 
         ResultVO resultVO = new ResultVO();
         String account = JwtUtil.validateToken(request.getHeader("Authorization")).get("account").toString();

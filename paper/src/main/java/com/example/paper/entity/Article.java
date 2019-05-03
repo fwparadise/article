@@ -13,11 +13,10 @@ import java.util.Date;
 @Data
 @Entity
 @EntityListeners(AuditingEntityListener.class)
-@GenericGenerator(name = "java-uuid", strategy = "org.hibernate.id.UUIDGenerator")
-public class Article implements Serializable {
+public class Article{
     @Id
-    @GeneratedValue(generator = "java-uuid")
-    private String articleId;
+    @GeneratedValue
+    private Long articleId;
     @Column(nullable = false)
     private String title;
     @Column(nullable = false)

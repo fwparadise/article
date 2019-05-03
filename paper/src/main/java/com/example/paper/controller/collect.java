@@ -1,7 +1,7 @@
 package com.example.paper.controller;
 
 
-import com.example.paper.entity.entryArticle;
+import com.example.paper.bean.ArticleItem;
 import com.example.paper.service.ManageCollect;
 import com.example.paper.utils.JwtUtil;
 import com.example.paper.vo.ResultVO;
@@ -25,7 +25,7 @@ public class collect {
     }
 
     @RequestMapping(value = "/exist", method = RequestMethod.GET)
-    public ResultVO exist(@RequestParam("articleId") String articleId, HttpServletRequest request) {
+    public ResultVO exist(@RequestParam("articleId") Long articleId, HttpServletRequest request) {
         ResultVO resultVO = new ResultVO();
         String account = JwtUtil.validateToken(request.getHeader("Authorization")).get("account").toString();
         resultVO.setState(1);
@@ -38,7 +38,7 @@ public class collect {
     public ResultVO getList(HttpServletRequest request) {
         ResultVO resultVO = new ResultVO();
         String account = JwtUtil.validateToken(request.getHeader("Authorization")).get("account").toString();
-        List<entryArticle> entryArticleList = manageCollect.getCollect(account);
+        List<ArticleItem> entryArticleList = manageCollect.getCollect(account);
         resultVO.setState(1);
         resultVO.setMsg("成功");
         resultVO.setData(entryArticleList);
@@ -46,7 +46,7 @@ public class collect {
     }
 
     @RequestMapping(value = "/cancel", method = RequestMethod.DELETE)
-    public ResultVO delete(@RequestParam("articleId") String articleId, HttpServletRequest request) {
+    public ResultVO delete(@RequestParam("articleId") Long articleId, HttpServletRequest request) {
         ResultVO resultVO = new ResultVO();
         String account = JwtUtil.validateToken(request.getHeader("Authorization")).get("account").toString();
         if (manageCollect.delete(account, articleId)) {
@@ -61,8 +61,8 @@ public class collect {
         return resultVO;
     }
 
-    @RequestMapping(value = "/add", method = RequestMethod.PUT)
-    public ResultVO add(@RequestParam("articleId") String articleId, HttpServletRequest request) {
+    @RequestMapping(value = "/add", method = RequestMethod.POST)
+    public ResultVO add(@RequestParam("articleId") Long articleId, HttpServletRequest request) {
         ResultVO resultVO = new ResultVO();
         resultVO.setState(1);
         resultVO.setMsg("成功");

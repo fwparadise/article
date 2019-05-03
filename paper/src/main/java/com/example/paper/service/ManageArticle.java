@@ -26,14 +26,14 @@ public class ManageArticle {
     public Article addArticle(Article article){
         return articleRepository.save(article);
     }
-    public Article updateArticle(Article article){
-        return articleRepository.save(article);
+    public void updateArticle(Article article){
+        articleRepository.save(article);
     }
-    public Article findOne(String id){
+    public Article findOne(Long id){
         return articleRepository.findByArticleId(id);
     }
-    public boolean deleteOne(String id){
-        return articleRepository.deleteByArticleId(id).size()>0;
+    public void deleteOne(Long id){
+        articleRepository.deleteByArticleId(id).size();
     }
     public Page<Article> getList(String kind, int page, int size){
         Pageable pageable=PageRequest.of(page-1,size,Sort.Direction.DESC,"updateTime");

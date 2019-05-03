@@ -1,8 +1,11 @@
 package com.example.paper.controller;
 
+import com.example.paper.bean.ArticleDetail;
+import com.example.paper.bean.ArticleItem;
+import com.example.paper.bean.ArticleModified;
 import com.example.paper.converter.ComposeFormToArticle;
 import com.example.paper.entity.*;
-import com.example.paper.form.ComposeForm;
+import com.example.paper.bean.ComposeForm;
 import com.example.paper.service.ManageArticle;
 import com.example.paper.service.ManageCollect;
 import com.example.paper.service.ManageComment;
@@ -11,12 +14,11 @@ import com.example.paper.utils.JwtUtil;
 import com.example.paper.vo.ResultVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.validation.Valid;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 @RestController
@@ -35,7 +37,7 @@ public class article {
         this.manageComment = manageComment;
     }
 
-    @RequestMapping(value = "/add", method = RequestMethod.PUT)
+    @RequestMapping(value = "/add", method = RequestMethod.POST)
     public ResultVO addArticle(ComposeForm composeForm, HttpServletRequest request) {
         ResultVO resultVO = new ResultVO();
         String account = JwtUtil.validateToken(request.getHeader("Authorization")).get("account").toString();
@@ -56,13 +58,14 @@ public class article {
     @RequestMapping(value = "/list", method = RequestMethod.GET)
     public ResultVO listArticle(@RequestParam("kind") String kind, @RequestParam("current") int current, @RequestParam("size") int size) {
         Page<Article> page = manageArticle.getList(kind, current, size);
-        List<entryArticle> result = new ArrayList<>();
+        List<ArticleItem> result = new ArrayList<>();
         List<Article> list = page.getContent();
         for (Article article:list){
-            entryArticle a = new entryArticle();
+            ArticleItem a = new ArticleItem();
             a.setArticleId(article.getArticleId());
             a.setCreateTime(article.getCreateTime());
             a.setTitle(article.getTitle());
+            a.setKind(article.getKind());
             User user = manageUser.FindOne(article.getAccount());
             if (user == null) {
                 a.setAuthor("unknown");
@@ -71,9 +74,9 @@ public class article {
             }
             result.add(a);
         }
-        ResultArticle resultArticle = new ResultArticle();
-        resultArticle.setList(result);
-        resultArticle.setTotal(page.getTotalElements());
+        HashMap<String,Object> resultArticle = new HashMap<>();
+        resultArticle.put("list",result);
+        resultArticle.put("total",page.getTotalElements());
         ResultVO resultVO = new ResultVO();
         resultVO.setState(1);
         resultVO.setMsg("success");
@@ -82,7 +85,7 @@ public class article {
     }
 
     @RequestMapping(value = "/detail", method = RequestMethod.GET)
-    public ResultVO getArticle(@RequestParam("id") String id) {
+    public ResultVO getArticle(@RequestParam("id") Long id) {
         Article article = manageArticle.findOne(id);
         ResultVO resultVO = new ResultVO();
         if (article == null) {
@@ -93,7 +96,7 @@ public class article {
         } else {
             resultVO.setState(1);
             resultVO.setMsg("成功");
-            articleDetail articleDetail = new articleDetail();
+            ArticleDetail articleDetail=new ArticleDetail();
             articleDetail.setArticle(article);
             User user;
             user = manageUser.FindOne(article.getAccount());
@@ -107,7 +110,7 @@ public class article {
         return resultVO;
     }
 
-    @RequestMapping(value = "/update",method = RequestMethod.PATCH)
+    @RequestMapping(value = "/update",method = RequestMethod.PUT)
     public ResultVO update(ArticleModified articleModified){
         Article article=manageArticle.findOne(articleModified.getArticleId());
         article.setTitle(articleModified.getTitle());
@@ -121,7 +124,7 @@ public class article {
         return resultVO;
     }
     @RequestMapping(value = "/delete",method = RequestMethod.DELETE)
-    public ResultVO delete(@RequestParam("id")String articleId){
+    public ResultVO delete(@RequestParam("id")Long articleId){
         manageCollect.delete(articleId);
         manageComment.deleteComment(articleId);
         manageArticle.deleteOne(articleId);

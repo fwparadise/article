@@ -22,7 +22,7 @@ import java.util.concurrent.ConcurrentHashMap;
 @Component
 @ServerEndpoint("/websocket/{account}")
 public class chat {
-    private Logger logger = LoggerFactory.getLogger(this.getClass());
+   // private Logger logger = LoggerFactory.getLogger(this.getClass());
     public static ManageMessage manageMessage;
     /**
      * 在线人数
@@ -52,10 +52,10 @@ public class chat {
     {
         try {
             onlineNumber++;
-            logger.info("现在来连接的客户id：" + session.getId() + "账号：" + account);
+          //  logger.info("现在来连接的客户id：" + session.getId() + "账号：" + account);
             this.account = account;
             this.session = session;
-            logger.info("有新连接加入！ 当前在线人数" + onlineNumber);
+           // logger.info("有新连接加入！ 当前在线人数" + onlineNumber);
 
             //把自己的信息加入到map当中
             clients.put(account, this);
@@ -67,17 +67,17 @@ public class chat {
                 }
                 manageMessage.deleteMessages(account);
             }
-            logger.info("已发送离线消息");
+         //   logger.info("已发送离线消息");
         }
         catch (Exception e){
-            logger.error("error"+e.getMessage());
+          //  logger.error("error"+e.getMessage());
         }
 
     }
 
     @OnError
     public void onError(Throwable error) {
-        logger.info("服务端发生了错误"+error.getMessage());
+     //   logger.info("服务端发生了错误"+error.getMessage());
         //error.printStackTrace();
     }
     /**
@@ -89,7 +89,7 @@ public class chat {
         onlineNumber--;
         //webSockets.remove(this);
         clients.remove(this.account);
-        logger.info("有连接关闭！ 当前在线人数" + onlineNumber);
+      //  logger.info("有连接关闭！ 当前在线人数" + onlineNumber);
     }
 
     /**
@@ -102,14 +102,14 @@ public class chat {
     public void onMessage(String message, Session session)
     {
         try {
-            logger.info("来自客户端消息：" + message+"客户端的id是："+session.getId());
+         //   logger.info("来自客户端消息：" + message+"客户端的id是："+session.getId());
             JSONObject jsonObject = new JSONObject(message);
             String to = jsonObject.getString("to");
             boolean flag=false;
             for (chat item : clients.values()) {
                 if (item.account.equals(to) ) {
                     item.session.getAsyncRemote().sendText(message);
-                    logger.info("成功发送到"+to);
+                 //   logger.info("成功发送到"+to);
                     flag=true;
                     break;
                 }
@@ -122,7 +122,7 @@ public class chat {
             }
         }
         catch (Exception e){
-            logger.info("发生了错误了");
+        //    logger.info("发生了错误了");
         }
     }
 }

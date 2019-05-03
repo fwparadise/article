@@ -1,15 +1,15 @@
 <template>
   <div id="info">
-    <el-col :span="20" :offset="2">
-      <el-card>
-        <el-col :span="12">
+    <el-col :span="12" :offset="6">
+      <el-card shadow="hover">
+        <el-col :span="12" :offset="6">
         <el-form ref="form" size="small">
           <el-form-item label="头像">
             <el-upload
               class="upload-demo" :show-file-list="false"
-              action="http://localhost:8080/user/profile/update"
+              action="http://47.106.156.233:8088/user/profile/update"
             accept="image/jpeg,image/gif,image/png" :headers="header" name="profile" :on-success="fresh">
-              <img :src="profile" style="height: 100px;width: 120px;display: inline-block" alt="暂无头像"/>
+              <img :src="profile" style="height: 100px;width: 100px;display: inline-block" alt="暂无头像"/>
               <el-button size="text" type="primary">点击更改</el-button>
             </el-upload>
           </el-form-item>
@@ -20,9 +20,9 @@
             <el-input v-model="info.username"></el-input>
           </el-form-item>
           <el-form-item label="性别">
-            <el-radio-group v-model="info.sex">
-              <el-radio :label="1">男</el-radio>
-              <el-radio :label="0">女</el-radio>
+            <el-radio-group v-model="info.gender">
+              <el-radio :label="0"><i class="el-icon-male"></i> </el-radio>
+              <el-radio :label="1"><i class="el-icon-female"></i></el-radio>
             </el-radio-group>
           </el-form-item>
           <el-form-item label="个人说明">
@@ -48,7 +48,7 @@
         info: {
           account: "",
           username: "",
-          sex: 1,
+          gender: 1,
           description: "",
         },
         uploadedProfile: "",
@@ -63,7 +63,7 @@
         }
       },
       profile(){
-        return "http://localhost:8080/sign/profile/get?account="+this.info.account;
+        return "http://47.106.156.233:8088/sign/profile/get?account="+this.info.account;
       }
     },
     mounted: function () {
@@ -81,7 +81,7 @@
         }).then(function (res) {
           _self.info.account = res.data.data.account;
           _self.info.username = res.data.data.username;
-          _self.info.sex = res.data.data.sex;
+          _self.info.gender = res.data.data.gender;
           _self.info.description = res.data.data.description;
         }).catch(function () {
           _self.$router.push("/")
@@ -91,8 +91,8 @@
     methods: {
       save: function () {
         let _self = this;
-        _self.axios.patch('/user/update',_self.qs.stringify({
-            sex: _self.info.sex,
+        _self.axios.put('/user/update',_self.qs.stringify({
+            gender: _self.info.genData,
             username: _self.info.username,
             description: _self.info.username
           }), {
@@ -128,5 +128,14 @@
     -moz-osx-font-smoothing: grayscale;
     text-align: center;
     color: #2c3e50;
+    margin-top: 60px;
+  }
+  a:link{
+    color: green;
+    text-decoration: none;
+  }
+  a:hover{
+    color: red;
+    text-decoration: underline;
   }
 </style>

@@ -36,7 +36,7 @@ public class JwtAuthenticationFilter implements Filter {
 
     //我们只对地址 /api 开头的api检查jwt. 不然的话登录/login也需要jwt
     private boolean isProtectedUrl(HttpServletRequest request) {
-        return !pathMatcher.match("/sign/**", request.getServletPath())&&!pathMatcher.match("/websocket/**",request.getServletPath());
+        return !pathMatcher.match("/sign/**", request.getServletPath())&&!pathMatcher.match("/websocket/**",request.getServletPath())&&!request.getServletPath().contains("swagger-ui");
     }
 
     public void init(FilterConfig config) throws ServletException {

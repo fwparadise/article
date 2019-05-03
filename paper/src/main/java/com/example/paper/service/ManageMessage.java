@@ -12,15 +12,19 @@ import java.util.List;
 @Service
 @Transactional
 public class ManageMessage {
+    private final MessageRepository messageRepository;
+
     @Autowired
-    private MessageRepository messageRepository;
+    public ManageMessage(MessageRepository messageRepository) {
+        this.messageRepository = messageRepository;
+    }
 
 
     public List<Message> getMessages(String to) {
         return messageRepository.findByReceiver(to);
     }
-    public List<Message> deleteMessages(String to){
-        return messageRepository.deleteByReceiver(to);
+    public void deleteMessages(String to){
+        messageRepository.deleteByReceiver(to);
     }
     public void add(Message message){
         messageRepository.save(message);

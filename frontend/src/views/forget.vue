@@ -1,10 +1,10 @@
 <template>
   <div id="forget">
     <el-col :span="6" :offset="9" style="padding-top: 100px">
-      <el-card>
+      <el-card shadow="hover">
         <el-form size="mini">
           <el-form-item label="账号">
-            <el-input v-model="account" placeholder="please input you account(it is you email)"/>
+            <el-input v-model="account" placeholder="please input you account(it is your email)"/>
           </el-form-item>
           <el-form-item>
             <el-button type="success" @click="sendtoken" style="width: 100%">发送</el-button>
@@ -25,14 +25,15 @@
 </template>
 
 <script>
+  let sha256=require("js-sha256").sha256;
   export default {
     name: "forget",
     data: function () {
       return {
+        timeLeave:0,
         account: "",
         token: "",
         password: "",
-        realtoken: "",
       }
     },
     methods: {
@@ -41,7 +42,7 @@
         if (_self.account !== "") {
           _self.axios.get("/sign/verification?account=" + _self.account).then(function (res) {
             if (res.data.state === 1) {
-              _self.realtoken = res.data.data;
+              _self.$message({type: "success", message: "发送成功"});
             } else {
               _self.$message({type: "info", message: "发送失败，输入有效的邮箱"});
             }
@@ -52,9 +53,10 @@
       },
       update: function () {
         let _self = this;
-        _self.axios.patch("/sign/forget", _self.qs.stringify({
+        _self.axios.put("/sign/forget", _self.qs.stringify({
           account: _self.account,
-          password: _self.password
+          password: sha256(_self.password),
+          verification:_self.token,
         })).then(function (res) {
           if (res.data.state === 1) {
             _self.$message({type: "success", message: "修改成功"});

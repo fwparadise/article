@@ -12,15 +12,14 @@ import java.util.Date;
 @Data
 @Entity
 @EntityListeners(AuditingEntityListener.class)
-@GenericGenerator(name = "java-uuid", strategy = "org.hibernate.id.UUIDGenerator")
-public class Comment implements Serializable {
+public class Comment{
     @Id
-    @GeneratedValue(generator = "java-uuid")
-    private String id;
+    @GeneratedValue
+    private Long CommentId;
     @Column(nullable = false)
     private String account;
     @Column(nullable = false)
-    private String articleId;
+    private Long articleId;
     @Column(nullable = false)
     private String content;
     @CreatedDate

@@ -7,7 +7,7 @@ import java.io.Serializable;
 
 @Data
 @Entity
-public class User implements Serializable {
+public class User implements Serializable{
     @Id
     private String  account;
     @Column(nullable = false)
@@ -15,7 +15,7 @@ public class User implements Serializable {
     @Column(nullable = false)
     private String username;
     @Column
-    private int sex;   //1为男
+    private int gender;   //1为男
     @Column
     private String description;
     @Lob

@@ -12,13 +12,11 @@ import 'quill/dist/quill.snow.css'
 import 'quill/dist/quill.bubble.css'
 
 Vue.use(VueQuillEditor);
-// import sha256 from "js-sha256"
-// Vue.use(sha256);
 Vue.use(ElementUI);
 Vue.prototype.axios = axios;
 Vue.prototype.qs = Qs;
-axios.defaults.baseURL = 'http://localhost:8080';
-// axios.defaults.timeout = 15000;  //超时响应
+axios.defaults.baseURL = 'http://47.106.156.233:8088';
+
 axios.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlencoded';
 axios.defaults.withCredentials = true;
 Vue.config.productionTip = false;

@@ -16,11 +16,10 @@ public class CorsFilter implements Filter {
     public void doFilter(ServletRequest req, ServletResponse res, FilterChain filterChain) throws ServletException, IOException {
         HttpServletResponse response = (HttpServletResponse) res;
         HttpServletRequest request = (HttpServletRequest) req;
-        if (!pathMatcher.match("/websocket/**",request.getServletPath())) {
-            System.out.println("no websocket");
-            response.setHeader("Access-Control-Allow-Origin", "http://localhost:8081");
+        if (!pathMatcher.match("/websocket/**",request.getServletPath())&&!request.getServletPath().contains("swagger-ui")) {
+            response.setHeader("Access-Control-Allow-Origin", ((HttpServletRequest) req).getHeader("Origin"));
             response.setHeader("Access-Control-Allow-Credentials", "true");
-            response.setHeader("Access-Control-Allow-Methods", "PUT,DELETE,GET,POST,PATCH");
+            response.setHeader("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE");
             response.setHeader("Access-Control-Allow-Headers", "Authorization");
         }
         if (request.getMethod().equals("OPTIONS")) {

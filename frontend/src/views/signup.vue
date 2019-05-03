@@ -1,8 +1,10 @@
 <template>
   <div id="signup">
     <el-col :span="5" :offset="9" style="padding-top: 100px">
-      <el-card >
-        <el-form ref="form" v-model="info" size="mini">
+      <el-card shadow="hover">
+        <el-form ref="form" v-model="info" size="mini" element-loading-text="拼命登录中"
+                 element-loading-spinner="el-icon-loading"
+                 element-loading-background="transparent" v-loading="loading">
           <el-form-item label="账号">
             <el-input v-model="info.account" placeholder="Please input your email as your account" required></el-input>
           </el-form-item>
@@ -34,19 +36,22 @@
           username: "",
         },
         message: "",
+        loading:false
       };
     },
     methods: {
       signUp() {
         let _self = this;
+        _self.loading=true;
         let reg = /^[A-Za-z0-9\u4e00-\u9fa5]+@[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)+$/;
         if (!reg.test(_self.info.account)) {
+          _self.loading=false
           _self.$message({type: 'error', message: "请输入有效邮箱"});
-          _self.info.account = ""
+          _self.info.account = "";
         }
         else {
           let password=sha256(_self.info.password);
-          _self.axios.put('/sign/up', _self.qs.stringify({
+          _self.axios.post('/sign/up', _self.qs.stringify({
             account: _self.info.account,
             password: password,
             username: _self.info.username
@@ -61,9 +66,11 @@
             else {
               _self.$message({type: "warning", message: res.data.msg});
             }
+            _self.loading=false
           })
             .catch(function () {
-              _self.$message({type: "error", message: "网络错误，请重试"})
+              _self.$message({type: "error", message: "网络错误，请重试"});
+              _self.loading=false
             })
         }
       }

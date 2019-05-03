@@ -1,7 +1,7 @@
 <template>
   <div id="articleContent">
     <el-col :span="18" :offset="3">
-      <el-card>
+      <el-card shadow="hover">
         <div slot="header">
           <h6 style="text-align: left">
             <router-link to="/home">回到主页</router-link>
@@ -11,34 +11,47 @@
         </div>
         <div>
           <p v-html="article.content" style="text-align: left;line-height: 30px"></p>
-          <el-form size="small" inline>
-            <el-form-item>
-              <el-input placeholder="请输入你的评论" v-model="comment"></el-input>
-            </el-form-item>
-            <el-form-item>
-              <el-button @click="make" type="primary">发表</el-button>
-            </el-form-item>
-            <span style="float: right"><i v-if="!collect" class="el-icon-star-off" @click="like"
-                                          style="font-size: 28px"></i>
-            <i v-else class="el-icon-star-on" @click="cancel" style="color: #FF4059;font-size: 28px"></i><el-rate
-                v-model="article.star"
-                :disabled="score" @change="mark" style="width: 140px;display: inline-block;height: 28px" show-score></el-rate></span>
-          </el-form>
-          <p v-for="comment in article.comments" style="text-align: left">
+          <el-divider></el-divider>
+          <el-row>
+            <el-col :offset="3" :span="3">
+              <el-rate v-model="article.star" :disabled="score" @change="mark" style="width: 140px;height: 28px;"
+                       show-score></el-rate>
+            </el-col>
+            <el-col :offset="10" :span="1">
+              <el-link :underline="false">
+                <i v-if="!collect" class="el-icon-star-off" @click="like" style="font-size: 28px"></i>
+                <i v-else class="el-icon-star-on" @click="cancel" style="color: darkred;font-size: 28px"></i>
+              </el-link>
+            </el-col>
+            <el-col :offset="1" :span="1">
+              <el-link :underline="false">
+                <i class="el-icon-chat-dot-round" style="font-size: 28px" @click="$refs.comment.focus()"></i>
+              </el-link>
+            </el-col>
+          </el-row>
+          <p v-for="comment in article.comments" style="text-align: left;font-size: 12px">
             <b>{{comment.username}}</b>:{{comment.content}}
           </p>
+          <el-form size="mini">
+            <el-form-item>
+              <el-input ref="comment" placeholder="请输入你的评论" v-model="comment" type="textarea"
+                        autosize @focus="show=true" @blur="show=(comment!=='')"></el-input>
+            </el-form-item>
+            <el-form-item v-show="show">
+              <el-button @click="make" type="primary" style="float: right" size="mini">发表</el-button>
+            </el-form-item>
+          </el-form>
         </div>
       </el-card>
     </el-col>
   </div>
 </template>
-
 <script>
-
   export default {
     name: 'articleContent',
     data() {
       return {
+        show: false,
         article: {
           articleid: 0, //文章id
           title: "",
@@ -56,19 +69,24 @@
         token: ""
       }
     },
-    // computed: {
-    //   display: function () {
-    //     return this.article.content.replace(/\n/g, "<br/>").split(' ').join("&nbsp;");
-    //   }
-    // },
-    mounted() {
+    computed: {
+      minRows() {
+        if (this.show){
+          return 3;
+        }
+        else{
+          return 1;
+        }
+      }
+    },
+    created() {
       let _self = this;
       _self.articleid = _self.$route.params.id;
       _self.token = JSON.parse(window.sessionStorage.getItem("Token"));
       if (_self.token === null) {
+        _self.loading = false;
         _self.$router.push("/")
-      }
-      else {
+      } else {
         _self.token = _self.token.Token;
         _self.axios.get("/user/info", {
           headers: {
@@ -149,11 +167,11 @@
       },
       make: function () {
         let _self = this;
+        _self.show = false;
         if (_self.comment === "") {
           _self.$alert("请输入评论内容")
-        }
-        else {
-          this.axios.put('/comment/add', _self.qs.stringify({
+        } else {
+          this.axios.post('/comment/add', _self.qs.stringify({
             articleId: _self.articleid,
             content: _self.comment
           }), {
@@ -166,8 +184,7 @@
                 _self.$message({type: "success", message: "评论成功"});
                 _self.comment = "";
                 _self.getcomment(_self);
-              }
-              else {
+              } else {
                 _self.$message("评论失败")
               }
             })
@@ -178,7 +195,7 @@
       },   //评论
       mark: function () {
         let _self = this;
-        this.axios.put('/star/add', _self.qs.stringify({
+        this.axios.post('/star/add', _self.qs.stringify({
           articleId: _self.articleid,
           score: _self.article.star
         }), {
@@ -191,8 +208,7 @@
               _self.$message({type: "success", message: "打分成功"});
               _self.score = true;
               _self.getstar(_self);
-            }
-            else {
+            } else {
               _self.$message("打分失败")
             }
           })
@@ -202,7 +218,7 @@
       },   //打分
       like: function () {
         let _self = this;
-        _self.axios.put("/collect/add", _self.qs.stringify({
+        _self.axios.post("/collect/add", _self.qs.stringify({
           articleId: _self.articleid,
         }), {
           headers: {
@@ -211,8 +227,7 @@
         }).then(function (res) {
           if (res.data.state === 1) {
             _self.collect = true;
-          }
-          else {
+          } else {
             _self.$message({type: "warning", message: "收藏失败"})
           }
         }).catch(function () {
@@ -230,8 +245,7 @@
         }).then(function (res) {
           if (res.data.state === 1) {
             _self.collect = false;
-          }
-          else {
+          } else {
             _self.$message({type: "warning", message: "取消失败"})
           }
         }).catch(function () {
@@ -250,5 +264,15 @@
     text-align: center;
     color: #2c3e50;
     margin-top: 60px;
+  }
+
+  a:link {
+    color: #666666;
+    text-decoration: none;
+  }
+
+  a:hover {
+    color: green;
+    text-decoration: underline;
   }
 </style>

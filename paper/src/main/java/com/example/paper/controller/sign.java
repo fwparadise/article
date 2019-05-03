@@ -1,26 +1,20 @@
 package com.example.paper.controller;
 
+import com.example.paper.bean.SignUpForm;
 import com.example.paper.converter.SignUpFormToUser;
 import com.example.paper.entity.User;
-import com.example.paper.form.SignUpForm;
-import com.example.paper.service.MailServiceImpl;
 import com.example.paper.service.ManageUser;
 import com.example.paper.utils.JwtUtil;
 import com.example.paper.vo.ResultVO;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.StringRedisTemplate;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-import org.thymeleaf.TemplateEngine;
-import org.thymeleaf.context.Context;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.io.OutputStream;
-import java.util.Random;
+import java.util.HashMap;
 import java.util.concurrent.TimeUnit;
 
 
@@ -28,17 +22,15 @@ import java.util.concurrent.TimeUnit;
 @RequestMapping(value = "/sign")
 public class sign {
     private final ManageUser manageUser;
-    private final TemplateEngine templateEngine;
-    private final MailServiceImpl mailService;
-    private final StringRedisTemplate stringRedisTemplate;
-    private final Logger logger= LoggerFactory.getLogger(this.getClass());
+    private final RedisTemplate<String,String> redisTemplate;
+    private final RabbitTemplate rabbitTemplate;
+ //   private final Logger logger= LoggerFactory.getLogger(this.getClass());
 
     @Autowired
-    public sign(ManageUser manageUser, TemplateEngine templateEngine, MailServiceImpl mailService, StringRedisTemplate stringRedisTemplate) {
+    public sign(ManageUser manageUser, RedisTemplate<String, String> redisTemplate, RabbitTemplate rabbitTemplate) {
         this.manageUser = manageUser;
-        this.templateEngine = templateEngine;
-        this.mailService = mailService;
-        this.stringRedisTemplate = stringRedisTemplate;
+        this.redisTemplate = redisTemplate;
+        this.rabbitTemplate = rabbitTemplate;
     }
 
     @RequestMapping(value = "/in", method = RequestMethod.POST)
@@ -60,7 +52,7 @@ public class sign {
                 resultVO.setToken(token);
                 resultVO.setMsg("成功");
                 resultVO.setData(user);
-                logger.info(user.getUsername()+" success to log in");
+           //     logger.info(user.getUsername()+" success to log in");
             } else {
                 resultVO.setState(0);
                 resultVO.setMsg("密码错误");
@@ -70,7 +62,7 @@ public class sign {
         return resultVO;
     }
 
-    @RequestMapping(value = "/up", method = RequestMethod.PUT)
+    @RequestMapping(value = "/up", method = RequestMethod.POST)
     public ResultVO LogUp(SignUpForm signUpForm) {
         ResultVO resultVO = new ResultVO();
         User user = SignUpFormToUser.convert(signUpForm);
@@ -91,26 +83,38 @@ public class sign {
 
     private String getToken(User user) {
         String token;
-        if (stringRedisTemplate.hasKey(user.getAccount())){
-            token = stringRedisTemplate.opsForValue().get(user.getAccount());
+        if (redisTemplate.opsForValue().get(String.format("token::%s",user.getAccount()))!=null){
+            token = redisTemplate.opsForValue().get(String.format("token::%s",user.getAccount()));
         }
         else {
             token = JwtUtil.generateToken(user);
-            stringRedisTemplate.opsForValue().set(user.getAccount(),token);
-            stringRedisTemplate.expire(user.getAccount(),3600, TimeUnit.SECONDS);
+            redisTemplate.opsForValue().set(String.format("token::%s",user.getAccount()),token);
+            redisTemplate.expire(String.format("token::%s",user.getAccount()),3600, TimeUnit.SECONDS);
         }
         return token;
     }
 
-    @RequestMapping(value = "/forget", method = RequestMethod.PATCH)
-    public ResultVO forget(@RequestParam("account") String account, @RequestParam("password") String password) {
+    @RequestMapping(value = "/forget", method = RequestMethod.PUT)
+    public ResultVO forget(@RequestParam("account") String account, @RequestParam("password") String password,@RequestParam("verification") String verification) {
         ResultVO resultVO = new ResultVO();
         User user = manageUser.FindOne(account);
+        String ver=redisTemplate.opsForValue().get(String.format("verification::%s",account));
         if (user == null) {
             resultVO.setState(0);
             resultVO.setMsg("用户不存在");
             resultVO.setData(null);
-        } else {
+        }
+        else if(ver==null){
+            resultVO.setState(0);
+            resultVO.setMsg("你还没有验证码");
+            resultVO.setData(null);
+        }
+        else if (!ver.equals(verification)){
+            resultVO.setState(0);
+            resultVO.setMsg("验证码错误");
+            resultVO.setData(null);
+        }
+        else {
             user.setPassword(password);
             manageUser.UpdateUser(user);
             resultVO.setState(1);
@@ -122,44 +126,56 @@ public class sign {
 
     @RequestMapping(value = "/verification", method = RequestMethod.GET)
     public ResultVO verification(@RequestParam("account") String account) {
-        ResultVO resultVO = new ResultVO();
-        String str = "01234567890qwertyuiopasdfghjklzxcvbnm";
-        StringBuilder stringBuilder = new StringBuilder();
-        int index;
-        Random random = new Random();
-        for (int i = 0; i < 6; ++i) {
-            index = random.nextInt(36);
-            stringBuilder.append(str.charAt(index));
-        }
-        User user = manageUser.FindOne(account);
-        System.out.println(user);
-        Context context = new Context();
-        context.setVariable("token", stringBuilder.toString());
-        context.setVariable("username", user.getUsername());
-        String emailContent = templateEngine.process("email.html", context);
-        if (mailService.sendSimpleMail(account, "主题：验证码", emailContent)) {
-            resultVO.setState(1);
-            resultVO.setMsg("成功");
-            resultVO.setData(stringBuilder.toString());
-        } else {
+        if (manageUser.FindOne(account)==null){
+            ResultVO resultVO=new ResultVO();
+            resultVO.setMsg("账号不存在");
             resultVO.setState(0);
-            resultVO.setMsg("失败");
             resultVO.setData(null);
+            return resultVO;
         }
-        return resultVO;
+        else {
+            rabbitTemplate.convertAndSend("mailExchange", "/mail", account);
+            ResultVO resultVO = new ResultVO();
+            resultVO.setMsg("");
+            resultVO.setState(1);
+            resultVO.setData(null);
+            return resultVO;
+        }
     }
 
     @RequestMapping(value = "/profile/get", method = RequestMethod.GET)
     public void getProfile(@RequestParam("account") String account, HttpServletResponse response) {
-        User user = manageUser.FindOne(account);
         response.setContentType("image/jpeg");
         response.setCharacterEncoding("UTF-8");
         try {
             OutputStream outputStream = response.getOutputStream();
-            outputStream.write(user.getProfile());
+            if (account.equals("")){
+                outputStream.write(new byte[0]);
+            }
+            else{
+                User user = manageUser.FindOne(account);
+                outputStream.write(user.getProfile());
+            }
             outputStream.flush();
-        } catch (Exception e) {
-//            System.out.println(e.getMessage());
+        } catch (IOException e) {
+            e.printStackTrace();
         }
+    }
+
+    @GetMapping(value = "/userExist")
+    public ResultVO exist(@RequestParam("account") String account){
+        User user=manageUser.FindOne(account);
+        ResultVO resultVO=new ResultVO();
+        if (user==null){
+            resultVO.setState(0);
+        }
+        else{
+            resultVO.setState(1);
+            HashMap<String,String> hashMap=new HashMap<>();
+            hashMap.put("account",account);
+            hashMap.put("username",user.getUsername());
+            resultVO.setData(hashMap);
+        }
+        return resultVO;
     }
 }

@@ -11,14 +11,13 @@ import java.io.Serializable;
 
 @Data
 @Entity
-@GenericGenerator(name = "java-uuid", strategy = "org.hibernate.id.UUIDGenerator")
-public class Collect implements Serializable {
+public class Collect{
     @Id
-    @GeneratedValue(generator = "java-uuid")
-    private  String collectId;
+    @GeneratedValue
+    private  Long collectId;
     @Column(nullable = false)
     private String account;
     @Column(nullable = false)
-    private String articleId;
+    private Long articleId;
     
 }

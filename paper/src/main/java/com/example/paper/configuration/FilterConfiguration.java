@@ -5,12 +5,24 @@ import com.example.paper.filter.JwtAuthenticationFilter;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
 public class FilterConfiguration {
+    //跨域设置
+//    @Bean
+//    public WebMvcConfigurer corsConfigurer() {
+//        return new WebMvcConfigurer() {
+//            @Override
+//            public void addCorsMappings(CorsRegistry registry) {
+//                registry.addMapping("/*").allowedOrigins("http://localhost:8081");
+//            }
+//        };
+//    }
     @Bean
     public FilterRegistrationBean jwtFilter() {
-        FilterRegistrationBean registrationBean = new FilterRegistrationBean();
+        FilterRegistrationBean<JwtAuthenticationFilter> registrationBean = new FilterRegistrationBean<>();
         JwtAuthenticationFilter filter = new JwtAuthenticationFilter();
         registrationBean.setFilter(filter);
         registrationBean.setOrder(2);
@@ -18,7 +30,7 @@ public class FilterConfiguration {
     }
     @Bean
     public FilterRegistrationBean corsFilter() {
-        FilterRegistrationBean registrationBean = new FilterRegistrationBean();
+        FilterRegistrationBean<CorsFilter> registrationBean = new FilterRegistrationBean<>();
         CorsFilter filter = new CorsFilter();
         registrationBean.setFilter(filter);
         registrationBean.setOrder(1);

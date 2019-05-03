@@ -1,7 +1,7 @@
 package com.example.paper.controller;
 
+import com.example.paper.bean.CommentItem;
 import com.example.paper.entity.Comment;
-import com.example.paper.entity.ResultComment;
 import com.example.paper.entity.User;
 import com.example.paper.service.ManageComment;
 import com.example.paper.service.ManageUser;
@@ -29,8 +29,8 @@ public class comment {
         this.manageUser = manageUser;
     }
 
-    @RequestMapping(value = "/add", method = RequestMethod.PUT)
-    public ResultVO add(@RequestParam("articleId") String articleId, @RequestParam("content") String content, HttpServletRequest request) {
+    @RequestMapping(value = "/add", method = RequestMethod.POST)
+    public ResultVO add(@RequestParam("articleId") Long articleId, @RequestParam("content") String content, HttpServletRequest request) {
         ResultVO resultVO = new ResultVO();
         String account = JwtUtil.validateToken(request.getHeader("Authorization")).get("account").toString();
         Comment comment = new Comment();
@@ -45,13 +45,13 @@ public class comment {
     }
 
     @RequestMapping(value = "/list", method = RequestMethod.GET)
-    public ResultVO getList(@RequestParam("articleId") String id) {
+    public ResultVO getList(@RequestParam("articleId") Long id) {
         ResultVO resultVO = new ResultVO();
         User user;
-        List<ResultComment> resultlist = new ArrayList<>();
+        List<CommentItem> resultlist = new ArrayList<>();
         List<Comment> list = manageComment.getList(id);
         for (Comment comment : list) {
-            ResultComment resultComment = new ResultComment();
+            CommentItem resultComment = new CommentItem();
             user = manageUser.FindOne(comment.getAccount());
             if (user == null) {
                 resultComment.setUsername("unkonown");

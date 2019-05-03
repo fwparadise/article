@@ -16,6 +16,7 @@ import NotFound from "@/views/NotFound"
 Vue.use(VueRouter);
 
 export default new VueRouter({
+  base:"/article/",
   mode: "history",
   routes: [
     {
@@ -27,33 +28,36 @@ export default new VueRouter({
       path: "/home",
       name: "home",
       component: home,
-      redirect:"/home/articleList",
-      children:[
-        {
-          path:"created",
-          component:created
-        },
-        {
-          path:"collect",
-          component:collect
-        },
-        {
-          path:"compose",
-          component:compose
-        },
-        {
-          path:"articleList",
-          component:articleList
-        },
-        {
-          path:"info",
-          component:info
-        },
-        {
-          path:"chat",
-          component:chat
-        }
-      ]
+    },
+    {
+      path:"/created",
+      name:'created',
+      component:created
+    },
+    {
+      path:"/collect",
+      name:'collect',
+      component:collect
+    },
+    {
+      path:"/compose",
+      name:'compose',
+      component:compose
+    },
+    {
+      path:"/articleList",
+      name:'articleList',
+      component:articleList
+    },
+    {
+      path:"/info",
+      name:"info",
+      component:info
+    },
+    {
+      path:"/chat",
+      name:"chat",
+      component:chat
     },
     {
       path: "/signup",

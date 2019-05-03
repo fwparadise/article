@@ -1,50 +1,33 @@
 <template>
   <div id="home">
     <el-container>
-      <el-header height="30px" style="text-align: left">美文网</el-header>
-      <el-main>
-        <el-container>
-          <el-aside width="200px">
-            <el-card>
-              <el-menu
-                :default-active="$route.path" router>
-                <el-menu-item index="articleList">
-                  <i class="material-icons">list</i>
-                  <span>文章列表</span>
-                </el-menu-item>
-                <el-menu-item index="info">
-                  <i class="material-icons">person</i>
-                  <span>个人信息</span>
-                </el-menu-item>
-                <el-menu-item index="compose">
-                  <i class="material-icons">add_circle</i>
-                  <span>发表文章</span>
-                </el-menu-item>
-                <el-menu-item index="created">
-                  <i class="material-icons">create</i>
-                  <span>我的创作</span>
-                </el-menu-item>
-                <el-menu-item index="collect">
-                  <i class="material-icons">favorite</i>
-                  <span>我的收藏</span>
-                </el-menu-item>
-                <el-menu-item index="chat">
-                  <i class="material-icons">chat</i>
-                  <span>聊天系统</span>
-                </el-menu-item>
-                <el-menu-item index="#" @click="signout">
-                  <i class="material-icons">clear</i>
-                  <span>退出登录</span>
-                </el-menu-item>
-              </el-menu>
-            </el-card>
+      <el-header height="100px">
+        <el-container style="width: 30%;float: right;margin-top: 20px">
+          <el-aside width="100px" style="position: relative;">
+            <el-link :href="'http://47.106.156.233:8088/sign/profile/get?account='+user.account" target="_blank">
+              <img :src="'http://47.106.156.233:8088/sign/profile/get?account='+user.account" style="width: 60px;height: 60px;border-radius: 50%;">
+
+              </el-link>
           </el-aside>
-          <el-main>
-            <keep-alive>
-              <router-view></router-view>
-            </keep-alive>
+          <el-main style="margin: auto 0;text-align: left">
+            <router-link to="/chat"><i class="el-icon-message" style="font-size: 18px"></i></router-link>
+            <el-dropdown @command="handlerJump">
+              <span class="el-dropdown-link">
+    {{user.username}}<i class="el-icon-arrow-down el-icon--right"></i>
+  </span>
+              <el-dropdown-menu slot="dropdown">
+                <el-dropdown-item command="/info">个人信息</el-dropdown-item>
+                <el-dropdown-item command="/created">我的创作</el-dropdown-item>
+                <el-dropdown-item command="/collect">我的收藏</el-dropdown-item>
+                <el-dropdown-item command="/compose">新建文章</el-dropdown-item>
+              </el-dropdown-menu>
+            </el-dropdown>
+            <span @click="signout"><el-link type="info" :underline="true">退出登录</el-link></span>
           </el-main>
         </el-container>
+      </el-header>
+      <el-main>
+        <article-list></article-list>
       </el-main>
     </el-container>
 
@@ -54,21 +37,30 @@
 <style scoped>
   #home {
     width: 100%;
+    font-family: 'Avenir', Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-align: center;
+    color: #2c3e50;
+  }
+  .el-dropdown-link {
+    cursor: pointer;
+    color: #409EFF;
+    font-size: 18px;
   }
 
-  .el-header {
-    margin: 0;
-  }
-
-  .el-menu {
-    padding: 0;
+  .el-icon-arrow-down {
+    font-size: 18px;
   }
 </style>
 
 <script>
 
+  import ArticleList from "../components/articleList";
+
   export default {
     name: "home",
+    components: {ArticleList},
     data() {
       return {
         user: {
@@ -101,6 +93,9 @@
         window.sessionStorage.removeItem("Token");
         // this.axios.get('/user/out');
         this.$router.push('/')
+      },
+      handlerJump(command) {
+        this.$router.push(command)
       }
     }
   }

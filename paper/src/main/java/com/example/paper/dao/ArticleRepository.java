@@ -8,10 +8,10 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.List;
 
 
-public interface ArticleRepository extends JpaRepository<Article,String> {
-    Article findByArticleId(String  id);
-    List<Article> deleteByArticleId(String id);
-    List<Article> findByAccount(String id);
+public interface ArticleRepository extends JpaRepository<Article,Long> {
+    Article findByArticleId(Long  id);
+    List<Article> deleteByArticleId(Long id);
+    List<Article> findByAccount(String account);
     Page<Article> findAllByKind(String  kind, Pageable pageable);
     Page<Article> findAll(Pageable pageable);
 }

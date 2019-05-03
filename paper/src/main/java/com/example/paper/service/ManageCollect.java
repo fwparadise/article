@@ -1,12 +1,12 @@
 package com.example.paper.service;
 
+import com.example.paper.bean.ArticleItem;
 import com.example.paper.dao.ArticleRepository;
 import com.example.paper.dao.CollectRepository;
 import com.example.paper.dao.UserRepository;
 import com.example.paper.entity.Article;
 import com.example.paper.entity.Collect;
 import com.example.paper.entity.User;
-import com.example.paper.entity.entryArticle;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,21 +28,17 @@ public class ManageCollect {
         this.userRepository = userRepository;
     }
 
-    public boolean exist(String account, String articleId) {
-        if (collectRepository.findByArticleIdAndAccount(articleId, account) == null) {
-            return false;
-        } else {
-            return true;
-        }
+    public boolean exist(String account,Long articleId) {
+        return collectRepository.findByArticleIdAndAccount(articleId, account) != null;
     }
 
-    public List<entryArticle> getCollect(String account) {
+    public List<ArticleItem> getCollect(String account) {
         List<Collect> collectList = collectRepository.findByAccount(account);
-        List<entryArticle> entryArticleList = new ArrayList<>();
+        List<ArticleItem> entryArticleList = new ArrayList<>();
         for (Collect collect : collectList) {
             Article article = articleRepository.findByArticleId(collect.getArticleId());
             User user = userRepository.findByAccount(collect.getAccount());
-            entryArticle entryarticle = new entryArticle();
+            ArticleItem entryarticle = new ArticleItem();
             entryarticle.setAuthor(user.getUsername());
             entryarticle.setTitle(article.getTitle());
             entryarticle.setCreateTime(article.getCreateTime());
@@ -52,15 +48,14 @@ public class ManageCollect {
         return entryArticleList;
     }
 
-    public boolean delete(String account, String articleId) {
+    public boolean delete(String account, Long articleId) {
         return collectRepository.deleteByArticleIdAndAccount(articleId, account).size() > 0;
     }
-    public boolean delete(String id){
+    public void delete(Long id){
         collectRepository.deleteByArticleId(id);
-        return true;
     }
 
-    public boolean add(String account, String articleId) {
+    public boolean add(String account, Long articleId) {
         Collect collect = new Collect();
         collect.setAccount(account);
         collect.setArticleId(articleId);

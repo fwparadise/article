@@ -1,17 +1,23 @@
 package com.example.paper.controller;
 
 
-import com.example.paper.entity.*;
+import com.example.paper.bean.ArticleItem;
+import com.example.paper.bean.UserInfo;
+import com.example.paper.bean.UserModified;
+import com.example.paper.entity.Article;
+import com.example.paper.entity.User;
 import com.example.paper.service.ManageArticle;
 import com.example.paper.service.ManageUser;
 import com.example.paper.utils.JwtUtil;
 import com.example.paper.vo.ResultVO;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -30,16 +36,6 @@ public class user {
         this.manageArticle = manageArticle;
     }
 
-
-    @RequestMapping(value = "/out", method = RequestMethod.GET)
-    public ResultVO LogOut() {
-        ResultVO resultVO = new ResultVO();
-        resultVO.setState(1);
-        resultVO.setMsg("成功");
-        resultVO.setData(null);
-        return resultVO;
-    }
-
     @RequestMapping(value = "/info", method = RequestMethod.GET)
     public ResultVO GetInfo(HttpServletRequest request) {
         User user;
@@ -49,7 +45,7 @@ public class user {
         UserInfo userInfo=new UserInfo();
         userInfo.setAccount(user.getAccount());
         userInfo.setDescription(user.getDescription());
-        userInfo.setSex(user.getSex());
+        userInfo.setGender(user.getGender());
         userInfo.setUsername(user.getUsername());
         resultVO.setState(1);
         resultVO.setMsg("成功");
@@ -57,13 +53,13 @@ public class user {
         return resultVO;
     }
 
-    @RequestMapping(value = "/update", method = RequestMethod.PATCH)
+    @RequestMapping(value = "/update", method = RequestMethod.PUT)
     public ResultVO Update(UserModified modified, HttpServletRequest request) {
         ResultVO resultVO = new ResultVO();
         User user = manageUser.FindOne(JwtUtil.validateToken(request.getHeader("Authorization")).get("account").toString());
         user.setUsername(modified.getUsername());
         user.setDescription(modified.getDescription());
-        user.setSex(modified.getSex());
+        user.setGender(modified.getGender());
         manageUser.UpdateUser(user);
         resultVO.setData(null);
         resultVO.setMsg("成功");
@@ -76,15 +72,11 @@ public class user {
         ResultVO resultVO = new ResultVO();
         String account = JwtUtil.validateToken(request.getHeader("Authorization")).get("account").toString();
         List<Article> articleList = manageArticle.getCreated(account);
-        List<entryArticle> entryArticleList = new ArrayList<>();
+        User user = manageUser.FindOne(account);
+        List<ArticleItem> entryArticleList = new ArrayList<>();
         for (Article a : articleList) {
-            entryArticle article = new entryArticle();
-            User user = manageUser.FindOne(a.getAccount());
-            if (user == null) {
-                article.setAuthor("unknown");
-            } else {
-                article.setAuthor(user.getUsername());
-            }
+            ArticleItem article = new ArticleItem();
+            article.setAuthor(user.getUsername());
             article.setCreateTime(a.getCreateTime());
             article.setTitle(a.getTitle());
             article.setArticleId(a.getArticleId());

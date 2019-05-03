@@ -1,7 +1,7 @@
 <template>
   <div id="compose">
-    <el-col :offset="2" :span="16">
-      <el-card style="height: 550px">
+    <el-col :offset="4" :span="16">
+      <el-card style="height: 550px" shadow="hover">
         <el-form ref="form" inline style="text-align: left">
           <el-form-item label="标题" size="small">
             <el-input v-model="title" placeholder="请输入标题"></el-input>
@@ -12,7 +12,7 @@
             </el-select>
           </el-form-item>
           <el-form-item size="small">
-            <el-button type="primary" @click="submit">提交</el-button>
+            <el-button type="primary" @click="submit" size="mini">提交</el-button>
           </el-form-item>
           <el-form-item label="正文">
             <quill-editor id="editor"
@@ -67,6 +67,7 @@
     mounted() {
       let _self = this;
       _self.token = JSON.parse(window.sessionStorage.getItem("Token"));
+      _self.articleId=_self.$route.params.articleId;
       if (_self.token === null) {
         _self.$router.push('/')
       }
@@ -82,7 +83,7 @@
           _self.$router.push("/")
         })
       }
-      if (_self.articleId!==""){
+      if (_self.articleId!==undefined){
         _self.axios.get("/article/detail?id="+_self.articleId,{
           headers:{
             "Authorization":_self.token
@@ -104,8 +105,8 @@
     methods: {
       submit: function () {
         let _self = this;
-        if (_self.articleId==="") {
-          this.axios.put('/article/add', _self.qs.stringify({
+        if (_self.articleId===undefined) {
+          this.axios.post('/article/add', _self.qs.stringify({
               title: _self.title,
               content: _self.content,
               kind: _self.kind
@@ -136,7 +137,7 @@
           })
         }
         else{
-          _self.axios.patch("/article/update",_self.qs.stringify({
+          _self.axios.put("/article/update",_self.qs.stringify({
             articleId:_self.articleId,
             title:_self.title,
             kind:_self.kind,
@@ -145,8 +146,9 @@
             headers:{
               "Authorization":_self.token
             }
-          }).then(function (res) {
-            _self.$message({type:"success",message:"修改成功"})
+          }).then(function () {
+            _self.$message({type:"success",message:"修改成功"});
+            _self.$router.push('/articleContent/'+_self.articleId)
           }).catch(function () {
             _self.$router.push("/")
           })
@@ -161,6 +163,7 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-align: center;
+    margin-top: 60px;
     color: #2c3e50;
   }
 </style>

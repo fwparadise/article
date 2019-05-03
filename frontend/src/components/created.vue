@@ -1,14 +1,15 @@
 <template>
   <div id="created">
     <el-col :span="18" :offset="3">
-      <el-card>
+      <el-card shadow="hover" style="overflow-y: auto;height: 500px;">
         <div slot="header">我的文章</div>
-        <el-table :data="articles" height="250">
+        <el-table :data="articles" empty-text="暂无创作">
           <el-table-column prop="title" label="文章"></el-table-column>
-          <el-table-column label="操作">
+          <el-table-column label="操作" align="center">
             <template slot-scope="scope">
               <el-button @click="$router.push('/articleContent/'+scope.row.articleId)" type="primary" size="mini">查看</el-button>
               <el-button type="danger" size="mini" @click="cancel(scope)">删除</el-button>
+              <el-button @click="$router.push({name:'compose',params:{articleId:scope.row.articleId}})" type="info" size="mini">修改</el-button>
             </template>
           </el-table-column>
         </el-table>
@@ -89,5 +90,6 @@
     -moz-osx-font-smoothing: grayscale;
     text-align: center;
     color: #2c3e50;
+    margin-top: 60px;
   }
 </style>

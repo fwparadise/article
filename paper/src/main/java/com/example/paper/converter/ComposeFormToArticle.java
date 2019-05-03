@@ -1,7 +1,7 @@
 package com.example.paper.converter;
 
 import com.example.paper.entity.Article;
-import com.example.paper.form.ComposeForm;
+import com.example.paper.bean.ComposeForm;
 public class ComposeFormToArticle {
     public  static Article convert(ComposeForm composeForm){
         Article article=new Article();

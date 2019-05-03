@@ -5,9 +5,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
 
-public interface CollectRepository extends JpaRepository<Collect,String> {
-    Collect findByArticleIdAndAccount(String articleId,String account);
+public interface CollectRepository extends JpaRepository<Collect,Long> {
+    Collect findByArticleIdAndAccount(Long articleId,String account);
     List<Collect> findByAccount(String account);
-    List<Collect> deleteByArticleIdAndAccount(String articleId,String account);
-    List<Collect> deleteByArticleId(String id);
+    List<Collect> deleteByArticleIdAndAccount(Long articleId,String account);
+    List<Collect> deleteByArticleId(Long id);
 }
